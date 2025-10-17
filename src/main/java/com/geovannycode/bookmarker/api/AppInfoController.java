@@ -6,7 +6,7 @@ import jakarta.ws.rs.Path;
 
 import java.time.Instant;
 
-@Path("/")
+@Path("/api/health")
 public class AppInfoController {
 
     public record AppInfo(String name, String version, String status) { }
