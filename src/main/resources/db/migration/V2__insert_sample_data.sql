@@ -1,0 +1,36 @@
+insert into categories(id, name, slug) values
+                                           (1, 'General', 'general'),
+                                           (2, 'Java', 'java'),
+                                           (3, 'Spring', 'spring'),
+                                           (4, 'Hibernate', 'hibernate'),
+                                           (5, 'JPA', 'jpa'),
+                                           (6, 'Spring Boot', 'spring-boot'),
+                                           (7, 'Spring Data', 'spring-data'),
+                                           (8, 'Spring Security', 'spring-security'),
+                                           (9, 'Spring Cloud', 'spring-cloud'),
+                                           (10, 'Spring WebFlux', 'spring-webflux'),
+                                           (11, 'Quarkus', 'quarkus'),
+                                           (12, 'Kotlin', 'kotlin'),
+                                           (13, 'Gradle', 'gradle'),
+                                           (14, 'Maven', 'maven'),
+                                           (15, 'Docker', 'docker'),
+                                           (16, 'Kubernetes', 'kubernetes'),
+                                           (17, 'AWS', 'aws'),
+                                           (18, 'Micronaut', 'micronaut'),
+                                           (19, 'IntelliJ IDEA', 'intellij-idea');
+
+insert into bookmarks(id, title, url, description) values
+                                                       (1, 'SivaLabs Blog', 'https://sivalabs.in', 'SivaLabs Blog'),
+                                                       (2, 'SivaLabs YouTube Channel', 'https://youtube.com/sivalabs', 'SivaLabs YouTube Channel'),
+                                                       (3, 'SivaLabs Twitter', 'https://twitter.com/sivalabs', 'SivaLabs Twitter'),
+                                                       (4, 'IntelliJ IDEA Blog', 'https://blog.jetbrains.com/idea/', 'IntelliJ IDEA Blog'),
+                                                       (5, 'JetBrains Blog', 'https://blog.jetbrains.com/', 'JetBrains Blog'),
+                                                       (6, 'JetBrains Junie', 'https://www.jetbrains.com/junie/', 'JetBrains Junie: Your smart coding agent'),
+                                                       (7, 'JetBrains Academy', 'https://www.jetbrains.com/academy/', 'JetBrains Academy'),
+                                                       (8, 'Carbon', 'https://carbon.now.sh/', 'Carbon: Create and share beautiful images of your source code'),
+                                                       (9, 'AI Native Dev Landscape', 'https://ainativedev.io/landscape', 'AI Native Dev Landscape'),
+                                                       (10, 'Spring Initializr', 'https://start.spring.io/', 'Spring Initializr'),
+                                                       (11, 'Quarkus Project Generator', 'https://quarkus.io/', 'Quarkus Project Generator'),
+                                                       (12, 'Micronaut Launch', 'https://micronaut.io/launch/', 'Micronaut Launch'),
+                                                       (13, 'Vaadin Project Generator', 'https://start.vaadin.com/', 'Vaadin Project Generator')
+;
