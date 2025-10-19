@@ -20,9 +20,9 @@ insert into categories(id, name, slug) values
                                            (19, 'IntelliJ IDEA', 'intellij-idea');
 
 insert into bookmarks(id, title, url, description) values
-                                                       (1, 'SivaLabs Blog', 'https://sivalabs.in', 'SivaLabs Blog'),
-                                                       (2, 'SivaLabs YouTube Channel', 'https://youtube.com/sivalabs', 'SivaLabs YouTube Channel'),
-                                                       (3, 'SivaLabs Twitter', 'https://twitter.com/sivalabs', 'SivaLabs Twitter'),
+                                                       (1, 'Geovannycode Blog', 'https://geovannycode.com', 'Geovannycode Blog'),
+                                                       (2, 'Geovannycode YouTube Channel', 'https://youtube.com/geovannycode', 'Geovannycode YouTube Channel'),
+                                                       (3, 'Geovannycode X', 'https://x.com/geovannycode', 'Geovannycode X'),
                                                        (4, 'IntelliJ IDEA Blog', 'https://blog.jetbrains.com/idea/', 'IntelliJ IDEA Blog'),
                                                        (5, 'JetBrains Blog', 'https://blog.jetbrains.com/', 'JetBrains Blog'),
                                                        (6, 'JetBrains Junie', 'https://www.jetbrains.com/junie/', 'JetBrains Junie: Your smart coding agent'),
