@@ -5,11 +5,10 @@ import com.geovannycode.bookmarker.entities.Bookmark;
 import com.geovannycode.bookmarker.exceptions.BadRequestException;
 import com.geovannycode.bookmarker.exceptions.ResourceNotFoundException;
 import com.geovannycode.bookmarker.models.PagedResult;
+import com.geovannycode.bookmarker.repository.BookmarkRepository;
 import io.quarkus.cache.CacheInvalidate;
 import io.quarkus.cache.CacheKey;
 import io.quarkus.cache.CacheResult;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -19,46 +18,38 @@ import java.util.Optional;
 @ApplicationScoped
 public class BookmarkService {
     private final ApplicationProperties properties;
+    private final BookmarkRepository bookmarkRepository;
 
-    public BookmarkService(ApplicationProperties properties) {
+    public BookmarkService(ApplicationProperties properties, BookmarkRepository bookmarkRepository) {
         this.properties = properties;
+        this.bookmarkRepository = bookmarkRepository;
     }
 
     public List<Bookmark> getAllBookmarks() {
-        return Bookmark.listAll(Sort.descending("id"));
+        return bookmarkRepository.findAllDesc().list();
     }
 
     public PagedResult<Bookmark> getBookmarks(int page) {
-        PanacheQuery<Bookmark> pageResult =
-                Bookmark.find("select b from Bookmark b order by b.id desc")
-                        .page(page - 1, properties.pageSize());
-        return new PagedResult<>(
-                pageResult.list(),
-                page,
-                pageResult.pageCount(),
-                pageResult.count(),
-                pageResult.hasNextPage(),
-                pageResult.hasPreviousPage());
+        return bookmarkRepository.findByPage(page, properties.pageSize());
     }
 
     @CacheResult(cacheName = "bookmarks-cache")
     public Optional<Bookmark> getBookmarkById(@CacheKey Long id) {
-        return Bookmark.findByIdOptional(id);
+        return bookmarkRepository.findByIdOptional(id);
     }
 
     @Transactional
     public Bookmark saveBookmark(Bookmark bookmark) {
         bookmark.id = null;
-        bookmark.persist();
+        bookmarkRepository.persist(bookmark);
         return bookmark;
     }
 
     @Transactional
     @CacheInvalidate(cacheName = "bookmarks-cache")
     public Bookmark updateBookmark(@CacheKey Long id, Bookmark bookmark) {
-        int updateCount = Bookmark.update("title=?1, url=?2, description=?3 where id=?4",
-                bookmark.title, bookmark.url, bookmark.description, id);
-        if (updateCount == 0) {
+        int updated = bookmarkRepository.updateFields(id, bookmark);
+        if (updated == 0) {
             throw new BadRequestException("Bookmark not found with id: " + id);
         }
         return bookmark;
@@ -67,8 +58,8 @@ public class BookmarkService {
     @Transactional
     @CacheInvalidate(cacheName = "bookmarks-cache")
     public void deleteBookmark(@CacheKey Long id) {
-        Bookmark.findByIdOptional(id)
-                .orElseThrow(()->new ResourceNotFoundException("Bookmark not found with id: " + id))
-                .delete();
+        Bookmark entity = bookmarkRepository.findByIdOptional(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bookmark not found with id: " + id));
+        bookmarkRepository.delete(entity);
     }
 }
