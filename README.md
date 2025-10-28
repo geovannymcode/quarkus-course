@@ -1,71 +1,136 @@
-# quarkus-course
+# 📘 Bookmarker API – Quarkus 3
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Aplicación REST construida con **Quarkus**, **Panache ORM**, y **Jakarta REST** para administrar marcadores (bookmarks) y categorías.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+---
 
-## Running the application in dev mode
+## 🧩 Estructura del Proyecto
 
-You can run your application in dev mode that enables live coding using:
+```
+quarkus-course/
+ ├── src/
+ │   ├── main/
+ │   │   ├── docker/
+ │   │   ├── java/com/geovannycode/bookmarker/
+ │   │   │   ├── api/           # Controladores REST
+ │   │   │   ├── config/        # Manejador global de excepciones
+ │   │   │   ├── entities/      # Entidades JPA
+ │   │   │   ├── exceptions/    # Excepciones personalizadas
+ │   │   │   ├── models/        # Modelos comunes (PagedResult, etc.)
+ │   │   │   ├── repository/    # Repositorios Panache
+ │   │   │   ├── services/      # Lógica de negocio
+ │   │   │   └── ApplicationProperties.java
+ │   │   └── resources/
+ │   │       ├── db/migration/  # Migraciones SQL (Flyway)
+ │   │       └── application.properties
+ │   └── test/                  # Tests de integración
+ ├── target/
+ ├── compose.yml
+ ├── pom.xml
+ ├── LICENSE
+ └── README.md
+```
 
-```shell script
+---
+
+## 🚀 Ejecución del Proyecto
+
+### 🔧 Requisitos
+- Java 21+
+- Maven 3.9+
+- Docker (opcional para Dev Services)
+
+### ▶️ Modo desarrollo
+
+```bash
 ./mvnw quarkus:dev
 ```
+Accede en: [http://localhost:8080](http://localhost:8080)
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+---
 
-## Packaging and running the application
+## 🌐 Endpoints Principales
 
-The application can be packaged using:
-
-```shell script
-./mvnw package
+### 🔹 Health
+**GET** `/api/health`
+```json
+{
+  "name": "Bookmarker",
+  "version": "1.0.0",
+  "status": "UP"
+}
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+### 🔹 Bookmarks
+| Método | Endpoint | Descripción |
+|---------|-----------|-------------|
+| GET | `/api/bookmarks/all` | Lista todos los bookmarks |
+| GET | `/api/bookmarks?page=1` | Paginado |
+| GET | `/api/bookmarks/{id}` | Busca por id |
+| POST | `/api/bookmarks` | Crea un bookmark |
+| PUT | `/api/bookmarks/{id}` | Actualiza |
+| DELETE | `/api/bookmarks/{id}` | Elimina |
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+**Ejemplo POST**
+```bash
+curl -X POST http://localhost:8080/api/bookmarks   -H "Content-Type: application/json"   -d '{"title":"Quarkus Docs","url":"https://quarkus.io","description":"Sitio oficial"}'
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+### 🔹 Categories
+| Método | Endpoint | Descripción |
+|---------|-----------|-------------|
+| GET | `/api/categories` | Lista categorías |
+| GET | `/api/categories?page=1` | Paginado |
+| GET | `/api/categories/{slug}` | Busca por slug |
+| POST | `/api/categories` | Crea categoría |
+| PUT | `/api/categories/{id}` | Actualiza |
+| DELETE | `/api/categories/{id}` | Elimina |
 
-## Creating a native executable
+---
 
-You can create a native executable using:
+## ⚙️ Configuración Clave (`application.properties`)
 
-```shell script
-./mvnw package -Dnative
+```properties
+quarkus.http.port=8080
+quarkus.flyway.migrate-at-start=true
+app.page-size=10
+
+quarkus.datasource.devservices.image-name=postgres:17-alpine
+quarkus.hibernate-orm.log.sql=true
+quarkus.log.level=INFO
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+---
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+## 🧪 Tests
+
+Ejecuta los tests con:
+```bash
+./mvnw test
 ```
 
-You can then execute your native executable with: `./target/quarkus-course-1.0-SNAPSHOT-runner`
+Incluye pruebas de integración reales (`@QuarkusTest`) para:
+- `CategoryServiceTest`
+- `BookmarkServiceTest`
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+---
 
-## Related Guides
+## 🧠 Tecnologías
 
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and
-  Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on
-  it.
-- Hibernate ORM ([guide](https://quarkus.io/guides/hibernate-orm)): Define your persistent model with Hibernate ORM and
-  Jakarta Persistence
-- Flyway ([guide](https://quarkus.io/guides/flyway)): Handle your database schema migrations
-- Hibernate Validator ([guide](https://quarkus.io/guides/validation)): Validate object properties (field, getter) and
-  method parameters for your beans (REST, CDI, Jakarta Persistence)
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus
-  REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code
-  for Hibernate ORM via the active record or the repository pattern
-- Redis Cache ([guide](https://quarkus.io/guides/cache-redis-reference)): Use Redis as the caching backend
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
+| Categoría | Tecnología |
+|------------|-------------|
+| Framework | Quarkus 3 |
+| REST | Jakarta REST |
+| ORM | Hibernate + Panache |
+| DB | PostgreSQL / H2 |
+| Migraciones | Flyway |
+| Cache | Quarkus Cache |
+| Testing | JUnit 5 + Quarkus Test |
+
+---
+
+## 👨‍💻 Autor
+**Geovanny Mendoza**  
+Backend Developer – Kotlin, Java, Spring, Quarkus  
+🌐 [https://geovannycode.com](https://geovannycode.com)  
+🐦 [@geovannycode](https://x.com/geovannycode)
