@@ -8,7 +8,9 @@ public record BookmarkResponse(
         Long id,
         String title,
         String url,
-        String description
+        String description,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 
     public static BookmarkResponse fromEntity(Bookmark bookmark) {
@@ -16,7 +18,9 @@ public record BookmarkResponse(
                 bookmark.id,
                 bookmark.title,
                 bookmark.url,
-                bookmark.description
+                bookmark.description,
+                bookmark.createdAt,
+                bookmark.updatedAt
         );
     }
 }
