@@ -15,12 +15,12 @@ public record BookmarkResponse(
 
     public static BookmarkResponse fromEntity(Bookmark bookmark) {
         return new BookmarkResponse(
-                bookmark.id,
-                bookmark.title,
-                bookmark.url,
-                bookmark.description,
-                bookmark.createdAt,
-                bookmark.updatedAt
+                bookmark.getId(),
+                bookmark.getTitle(),
+                bookmark.getTitle(),
+                bookmark.getDescription(),
+                bookmark.getCreatedAt(),
+                bookmark.getUpdatedAt()
         );
     }
 }

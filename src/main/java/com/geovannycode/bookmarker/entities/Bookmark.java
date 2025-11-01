@@ -16,37 +16,41 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "bookmarks")
-public class Bookmark extends PanacheEntityBase {
+public class Bookmark {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "bookmark_id_generator")
     @SequenceGenerator(name = "bookmark_id_generator", sequenceName = "bookmark_id_seq")
-    public Long id;
+    private Long id;
 
-    @Column(name = "title", nullable = false, length = 150)
-    public String title;
+    @Column(nullable = false)
+    private String title;
 
-    @Column(name = "url", nullable = false, length = 500)
-    public String url;
+    @Column(nullable = false, unique = true)
+    private String url;
 
-    @Column(name = "description", length = 1000)
-    public String description;
+    @Column(length = 1000)
+    private String description;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    public LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    public LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
     public Bookmark() {
     }
-
 
     public Bookmark(String title, String url, String description) {
         this.title = title;
         this.url = url;
         this.description = description;
     }
+
+    public static BookmarkBuilder builder() {
+        return new BookmarkBuilder();
+    }
+
 
     @PrePersist
     protected void onCreate() {
@@ -59,6 +63,48 @@ public class Bookmark extends PanacheEntityBase {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // Getters
+    public Long getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    // Setters (package-private for better encapsulation)
+    void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -78,8 +124,37 @@ public class Bookmark extends PanacheEntityBase {
     @Override
     public String toString() {
         return String.format(
-                "Bookmark{id=%d, title='%s', url='%s', createdAt=%s}",
-                id, title, url, createdAt
+                "Bookmark{id=%d, title='%s', url='%s'}",
+                id, title, url
         );
+    }
+
+
+    public static class BookmarkBuilder {
+        private String title;
+        private String url;
+        private String description;
+
+        private BookmarkBuilder() {
+        }
+
+        public BookmarkBuilder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public BookmarkBuilder url(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public BookmarkBuilder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Bookmark build() {
+            return new Bookmark(title, url, description);
+        }
     }
 }

@@ -13,23 +13,26 @@ import java.util.Optional;
 @ApplicationScoped
 public class BookmarkRepository implements PanacheRepository<Bookmark> {
 
+    private static final String SORT_FIELD = "id";
+    private static final String URL_FIELD = "url";
+
     public Optional<Bookmark> findByUrl(String url) {
-        return find("url", url).firstResultOptional();
+        return find(URL_FIELD, url).firstResultOptional();
     }
 
-    public PanacheQuery<Bookmark> findAllDesc() {
-        return findAll(Sort.descending("id"));
+    public PanacheQuery<Bookmark> findAllDescending() {
+        return findAll(Sort.descending(SORT_FIELD));
     }
 
-    public PagedResult<Bookmark> findByPage(int pageNo, int size) {
-        int idx = pageNo > 1 ? pageNo - 1 : 0;
-        Page page = Page.of(idx, size);
+    public PagedResult<Bookmark> findByPage(int pageNumber, int pageSize) {
+        int pageIndex = calculatePageIndex(pageNumber);
+        Page page = Page.of(pageIndex, pageSize);
 
-        PanacheQuery<Bookmark> query = findAllDesc().page(page);
+        PanacheQuery<Bookmark> query = findAllDescending().page(page);
 
         return new PagedResult<>(
                 query.list(),
-                idx + 1,
+                pageNumber,
                 query.pageCount(),
                 query.count(),
                 query.hasNextPage(),
@@ -37,8 +40,12 @@ public class BookmarkRepository implements PanacheRepository<Bookmark> {
         );
     }
 
-    public int updateFields(Long id, Bookmark b) {
-        return update("title=?1, url=?2, description=?3 where id=?4",
-                b.title, b.url, b.description, id);
+    public int updateFields(Long id, String title, String url, String description) {
+        String updateQuery = "title = ?1, url = ?2, description = ?3 where id = ?4";
+        return update(updateQuery, title, url, description, id);
+    }
+
+    private int calculatePageIndex(int pageNumber) {
+        return pageNumber > 1 ? pageNumber - 1 : 0;
     }
 }

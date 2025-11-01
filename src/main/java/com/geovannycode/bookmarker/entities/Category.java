@@ -34,18 +34,11 @@ public class Category {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    /**
-     * Default constructor for JPA.
-     */
+
     public Category() {
     }
 
-    /**
-     * Constructor with required fields.
-     *
-     * @param name category name
-     * @param slug URL-friendly slug
-     */
+
     public Category(String name, String slug) {
         this.name = name;
         this.slug = slug;

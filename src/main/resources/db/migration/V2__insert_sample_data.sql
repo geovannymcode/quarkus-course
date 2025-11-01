@@ -19,18 +19,17 @@ insert into categories(id, name, slug) values
                                            (18, 'Micronaut', 'micronaut'),
                                            (19, 'IntelliJ IDEA', 'intellij-idea');
 
-insert into bookmarks(id, title, url, description) values
-                                                       (1, 'Geovannycode Blog', 'https://geovannycode.com', 'Geovannycode Blog'),
-                                                       (2, 'Geovannycode YouTube Channel', 'https://youtube.com/geovannycode', 'Geovannycode YouTube Channel'),
-                                                       (3, 'Geovannycode X', 'https://x.com/geovannycode', 'Geovannycode X'),
-                                                       (4, 'IntelliJ IDEA Blog', 'https://blog.jetbrains.com/idea/', 'IntelliJ IDEA Blog'),
-                                                       (5, 'JetBrains Blog', 'https://blog.jetbrains.com/', 'JetBrains Blog'),
-                                                       (6, 'JetBrains Junie', 'https://www.jetbrains.com/junie/', 'JetBrains Junie: Your smart coding agent'),
-                                                       (7, 'JetBrains Academy', 'https://www.jetbrains.com/academy/', 'JetBrains Academy'),
-                                                       (8, 'Carbon', 'https://carbon.now.sh/', 'Carbon: Create and share beautiful images of your source code'),
-                                                       (9, 'AI Native Dev Landscape', 'https://ainativedev.io/landscape', 'AI Native Dev Landscape'),
-                                                       (10, 'Spring Initializr', 'https://start.spring.io/', 'Spring Initializr'),
-                                                       (11, 'Quarkus Project Generator', 'https://quarkus.io/', 'Quarkus Project Generator'),
-                                                       (12, 'Micronaut Launch', 'https://micronaut.io/launch/', 'Micronaut Launch'),
-                                                       (13, 'Vaadin Project Generator', 'https://start.vaadin.com/', 'Vaadin Project Generator')
-;
+insert into bookmarks(id, title, url, description, created_at, updated_at) values
+                                                                               (1, 'Geovannycode Blog', 'https://geovannycode.com', 'Geovannycode Blog', current_timestamp, current_timestamp),
+                                                                               (2, 'Geovannycode YouTube Channel', 'https://youtube.com/geovannycode', 'Geovannycode YouTube Channel', current_timestamp, current_timestamp),
+                                                                               (3, 'Geovannycode X', 'https://x.com/geovannycode', 'Geovannycode X', current_timestamp, current_timestamp),
+                                                                               (4, 'IntelliJ IDEA Blog', 'https://blog.jetbrains.com/idea/', 'IntelliJ IDEA Blog', current_timestamp, current_timestamp),
+                                                                               (5, 'JetBrains Blog', 'https://blog.jetbrains.com/', 'JetBrains Blog', current_timestamp, current_timestamp),
+                                                                               (6, 'JetBrains Junie', 'https://www.jetbrains.com/junie/', 'JetBrains Junie: Your smart coding agent', current_timestamp, current_timestamp),
+                                                                               (7, 'JetBrains Academy', 'https://www.jetbrains.com/academy/', 'JetBrains Academy', current_timestamp, current_timestamp),
+                                                                               (8, 'Carbon', 'https://carbon.now.sh/', 'Carbon: Create and share beautiful images of your source code', current_timestamp, current_timestamp),
+                                                                               (9, 'AI Native Dev Landscape', 'https://ainativedev.io/landscape', 'AI Native Dev Landscape', current_timestamp, current_timestamp),
+                                                                               (10, 'Spring Initializr', 'https://start.spring.io/', 'Spring Initializr', current_timestamp, current_timestamp),
+                                                                               (11, 'Quarkus Project Generator', 'https://quarkus.io/', 'Quarkus Project Generator', current_timestamp, current_timestamp),
+                                                                               (12, 'Micronaut Launch', 'https://micronaut.io/launch/', 'Micronaut Launch', current_timestamp, current_timestamp),
+                                                                               (13, 'Vaadin Project Generator', 'https://start.vaadin.com/', 'Vaadin Project Generator', current_timestamp, current_timestamp);

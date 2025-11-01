@@ -1,6 +1,6 @@
 package com.geovannycode.bookmarker.api;
 
-import com.geovannycode.bookmarker.entities.Bookmark;
+import com.geovannycode.bookmarker.exceptions.ResourceNotFoundException;
 import com.geovannycode.bookmarker.services.BookmarkService;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -12,12 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.Optional;
-
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
 class BookmarkControllerTest {
@@ -123,7 +121,9 @@ class BookmarkControllerTest {
                 .then()
                 .statusCode(204);
 
-        Optional<Bookmark> bookmarkById = bookmarkService.getBookmarkById(1L);
-        assertTrue(bookmarkById.isEmpty());
+        assertThrows(ResourceNotFoundException.class,
+                () -> bookmarkService.getBookmarkById(1L));
     }
+
+
 }
