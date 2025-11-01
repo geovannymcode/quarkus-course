@@ -5,7 +5,6 @@ Aplicación REST construida con **Quarkus**, **Panache ORM**, y **Jakarta REST**
 ---
 
 ## 🧩 Estructura del Proyecto
-
 ```
 quarkus-course/
  ├── src/
@@ -13,10 +12,10 @@ quarkus-course/
  │   │   ├── docker/
  │   │   ├── java/com/geovannycode/bookmarker/
  │   │   │   ├── api/           # Controladores REST
- │   │   │   ├── config/        # Manejador global de excepciones
+ │   │   │   ├── config/        # Configuración OpenAPI y excepciones
  │   │   │   ├── entities/      # Entidades JPA
  │   │   │   ├── exceptions/    # Excepciones personalizadas
- │   │   │   ├── models/        # Modelos comunes (PagedResult, etc.)
+ │   │   │   ├── models/        # DTOs y modelos (PagedResult, etc.)
  │   │   │   ├── repository/    # Repositorios Panache
  │   │   │   ├── services/      # Lógica de negocio
  │   │   │   └── ApplicationProperties.java
@@ -41,11 +40,18 @@ quarkus-course/
 - Docker (opcional para Dev Services)
 
 ### ▶️ Modo desarrollo
-
 ```bash
 ./mvnw quarkus:dev
 ```
+
 Accede en: [http://localhost:8080](http://localhost:8080)
+
+### 📚 Documentación API (Swagger UI)
+Una vez iniciada la aplicación, accede a la documentación interactiva:
+
+- **Swagger UI**: [http://localhost:8080/q/swagger-ui](http://localhost:8080/q/swagger-ui)
+- **OpenAPI JSON**: [http://localhost:8080/q/openapi](http://localhost:8080/q/openapi)
+- **OpenAPI YAML**: [http://localhost:8080/q/openapi?format=yaml](http://localhost:8080/q/openapi?format=yaml)
 
 ---
 
@@ -73,7 +79,9 @@ Accede en: [http://localhost:8080](http://localhost:8080)
 
 **Ejemplo POST**
 ```bash
-curl -X POST http://localhost:8080/api/bookmarks   -H "Content-Type: application/json"   -d '{"title":"Quarkus Docs","url":"https://quarkus.io","description":"Sitio oficial"}'
+curl -X POST http://localhost:8080/api/bookmarks \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Quarkus Docs","url":"https://quarkus.io","description":"Sitio oficial"}'
 ```
 
 ### 🔹 Categories
@@ -86,17 +94,29 @@ curl -X POST http://localhost:8080/api/bookmarks   -H "Content-Type: application
 | PUT | `/api/categories/{id}` | Actualiza |
 | DELETE | `/api/categories/{id}` | Elimina |
 
+> 💡 **Tip**: Para ver todos los endpoints con ejemplos y probarlos directamente, visita [Swagger UI](http://localhost:8080/q/swagger-ui)
+
 ---
 
 ## ⚙️ Configuración Clave (`application.properties`)
-
 ```properties
+# Server
 quarkus.http.port=8080
-quarkus.flyway.migrate-at-start=true
-app.page-size=10
 
+# Database
+quarkus.flyway.migrate-at-start=true
 quarkus.datasource.devservices.image-name=postgres:17-alpine
 quarkus.hibernate-orm.log.sql=true
+
+# Pagination
+app.page-size=10
+
+# OpenAPI / Swagger
+quarkus.swagger-ui.always-include=true
+quarkus.swagger-ui.path=/q/swagger-ui
+quarkus.smallrye-openapi.path=/q/openapi
+
+# Logging
 quarkus.log.level=INFO
 ```
 
@@ -112,6 +132,7 @@ Ejecuta los tests con:
 Incluye pruebas de integración reales (`@QuarkusTest`) para:
 - `CategoryServiceTest`
 - `BookmarkServiceTest`
+- `BookmarkControllerTest` (REST Assured)
 
 ---
 
@@ -125,12 +146,27 @@ Incluye pruebas de integración reales (`@QuarkusTest`) para:
 | DB | PostgreSQL / H2 |
 | Migraciones | Flyway |
 | Cache | Quarkus Cache |
-| Testing | JUnit 5 + Quarkus Test |
+| Documentación | OpenAPI 3.0 + Swagger UI |
+| Testing | JUnit 5 + REST Assured + Quarkus Test |
+
+---
+
+## 📖 Características
+
+- ✅ **API REST** completa con CRUD para bookmarks y categorías
+- ✅ **Documentación automática** con OpenAPI/Swagger
+- ✅ **Paginación** configurable
+- ✅ **Validación** de datos con Bean Validation
+- ✅ **Cache** para optimización de queries
+- ✅ **Migraciones** de base de datos con Flyway
+- ✅ **Tests de integración** completos
+- ✅ **Dev Services** con PostgreSQL en Docker
 
 ---
 
 ## 👨‍💻 Autor
+
 **Geovanny Mendoza**  
-Backend Developer – Kotlin, Java, Spring, Quarkus  
+Backend Developer – Java, Spring, Quarkus, Kotlin  
 🌐 [https://geovannycode.com](https://geovannycode.com)  
 🐦 [@geovannycode](https://x.com/geovannycode)
