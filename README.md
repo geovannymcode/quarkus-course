@@ -84,16 +84,6 @@ curl -X POST http://localhost:8080/api/bookmarks \
   -d '{"title":"Quarkus Docs","url":"https://quarkus.io","description":"Sitio oficial"}'
 ```
 
-### 🔹 Categories
-| Método | Endpoint | Descripción |
-|---------|-----------|-------------|
-| GET | `/api/categories` | Lista categorías |
-| GET | `/api/categories?page=1` | Paginado |
-| GET | `/api/categories/{slug}` | Busca por slug |
-| POST | `/api/categories` | Crea categoría |
-| PUT | `/api/categories/{id}` | Actualiza |
-| DELETE | `/api/categories/{id}` | Elimina |
-
 > 💡 **Tip**: Para ver todos los endpoints con ejemplos y probarlos directamente, visita [Swagger UI](http://localhost:8080/q/swagger-ui)
 
 ---
