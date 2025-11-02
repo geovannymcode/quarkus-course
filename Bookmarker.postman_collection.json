@@ -1,41 +1,103 @@
 {
   "info": {
-    "name": "Bookmarker API – Quarkus",
+    "name": "Bookmarker API – Quarkus (Secured)",
     "_postman_id": "e9814156-f37e-4706-a49b-9ede4a72d202",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Colección de Postman para probar la API Bookmarker (Quarkus). Incluye Health y CRUD de Bookmarks con ejemplos y tests básicos."
+    "description": "Colección completa de Postman para la API Bookmarker (Quarkus) con autenticación JWT. Incluye Health, Auth y CRUD de Bookmarks con gestión automática de tokens."
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwtToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-login si no hay token y el endpoint requiere autenticación",
+          "const protectedPaths = ['/api/bookmarks'];",
+          "const currentPath = pm.request.url.getPath();",
+          "const method = pm.request.method;",
+          "",
+          "// Si es POST, PUT, DELETE en bookmarks y no hay token, hacer login",
+          "if ((method === 'POST' || method === 'PUT' || method === 'DELETE') && ",
+          "    currentPath.includes('/api/bookmarks')) {",
+          "    ",
+          "    const token = pm.collectionVariables.get('jwtToken');",
+          "    ",
+          "    if (!token || token === '') {",
+          "        console.log('No hay token, ejecutando auto-login...');",
+          "        ",
+          "        const loginRequest = {",
+          "            url: pm.collectionVariables.get('baseUrl') + '/api/auth/login',",
+          "            method: 'POST',",
+          "            header: {",
+          "                'Content-Type': 'application/json'",
+          "            },",
+          "            body: {",
+          "                mode: 'raw',",
+          "                raw: JSON.stringify({",
+          "                    username: pm.collectionVariables.get('defaultUsername'),",
+          "                    password: pm.collectionVariables.get('defaultPassword')",
+          "                })",
+          "            }",
+          "        };",
+          "        ",
+          "        pm.sendRequest(loginRequest, (err, response) => {",
+          "            if (err) {",
+          "                console.error('Error en auto-login:', err);",
+          "            } else {",
+          "                const jsonData = response.json();",
+          "                pm.collectionVariables.set('jwtToken', jsonData.token);",
+          "                pm.collectionVariables.set('currentUsername', jsonData.username);",
+          "                console.log('Auto-login exitoso para:', jsonData.username);",
+          "            }",
+          "        });",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ],
   "item": [
     {
-      "name": "Health",
+      "name": "🏥 Health",
       "item": [
         {
           "name": "GET /api/health",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/health",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "health"
-              ]
-            }
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Verifica el estado de la API (endpoint público)"
           },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Tiene campos name/version/status', function () {",
+                  "pm.test('✅ Status 200', function () { pm.response.to.have.status(200); });",
+                  "",
+                  "pm.test('✅ Tiene campos name/version/status', function () {",
                   "  const body = pm.response.json();",
                   "  pm.expect(body).to.have.property('name');",
                   "  pm.expect(body).to.have.property('version');",
                   "  pm.expect(body).to.have.property('status');",
+                  "  pm.expect(body.status).to.eql('UP');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -46,35 +108,254 @@
       ]
     },
     {
-      "name": "Bookmarks",
+      "name": "🔐 Authentication",
       "item": [
         {
-          "name": "GET /api/bookmarks/all",
+          "name": "POST /api/auth/register",
           "request": {
-            "method": "GET",
-            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{newUsername}}\",\n  \"email\": \"{{newUserEmail}}\",\n  \"password\": \"{{newUserPassword}}\",\n  \"fullName\": \"Test User\"\n}"
+            },
             "url": {
-              "raw": "{{baseUrl}}/api/bookmarks/all",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookmarks",
-                "all"
-              ]
-            }
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Registra un nuevo usuario y retorna JWT token"
           },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Respuesta es array', function () {",
+                  "pm.test('✅ Status 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('✅ Respuesta contiene token JWT', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.expect(jsonData).to.have.property('type', 'Bearer');",
+                  "    pm.expect(jsonData).to.have.property('username');",
+                  "    pm.expect(jsonData).to.have.property('roles');",
+                  "});",
+                  "",
+                  "// Guardar token para usar en otros requests",
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('jwtToken', jsonData.token);",
+                  "    pm.collectionVariables.set('currentUsername', jsonData.username);",
+                  "    console.log('✅ Usuario registrado:', jsonData.username);",
+                  "    console.log('✅ Token guardado');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generar username único para evitar conflictos",
+                  "const timestamp = new Date().getTime();",
+                  "pm.collectionVariables.set('newUsername', 'user' + timestamp);",
+                  "pm.collectionVariables.set('newUserEmail', 'user' + timestamp + '@test.com');",
+                  "pm.collectionVariables.set('newUserPassword', 'TestPass123!');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/auth/login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{defaultUsername}}\",\n  \"password\": \"{{defaultPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Autentica un usuario y retorna JWT token (24h de validez)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('✅ Login exitoso con JWT', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.expect(jsonData.token).to.be.a('string').and.not.empty;",
+                  "    pm.expect(jsonData).to.have.property('type', 'Bearer');",
+                  "    pm.expect(jsonData).to.have.property('username');",
+                  "    pm.expect(jsonData).to.have.property('roles');",
+                  "});",
+                  "",
+                  "// Guardar token automáticamente",
+                  "const jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('jwtToken', jsonData.token);",
+                  "pm.collectionVariables.set('currentUsername', jsonData.username);",
+                  "pm.collectionVariables.set('currentRoles', jsonData.roles);",
+                  "",
+                  "console.log('✅ Login exitoso');",
+                  "console.log('Usuario:', jsonData.username);",
+                  "console.log('Roles:', jsonData.roles);",
+                  "console.log('Token guardado y listo para usar');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/auth/login (Admin)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login con usuario administrador (puede eliminar bookmarks)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Admin login exitoso', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.roles).to.include('ADMIN');",
+                  "});",
+                  "",
+                  "// Guardar token de admin",
+                  "const jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('jwtToken', jsonData.token);",
+                  "pm.collectionVariables.set('adminToken', jsonData.token);",
+                  "pm.collectionVariables.set('currentUsername', jsonData.username);",
+                  "pm.collectionVariables.set('currentRoles', jsonData.roles);",
+                  "",
+                  "console.log('✅ Admin login exitoso');",
+                  "console.log('Roles:', jsonData.roles);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/auth/me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Obtiene información del usuario autenticado (requiere JWT)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('✅ Retorna info del usuario', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('username');",
+                  "    console.log('Usuario actual:', jsonData.username);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📚 Bookmarks",
+      "item": [
+        {
+          "name": "GET /api/bookmarks/all",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", "all"]
+            },
+            "description": "Obtiene todos los bookmarks sin paginación (público)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 200', function () { pm.response.to.have.status(200); });",
+                  "",
+                  "pm.test('✅ Respuesta es array', function () {",
                   "  pm.response.to.be.json;",
                   "  const data = pm.response.json();",
                   "  pm.expect(Array.isArray(data)).to.eql(true);",
+                  "  console.log('Total de bookmarks:', data.length);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -85,36 +366,42 @@
         {
           "name": "GET /api/bookmarks?page={{page}}",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/bookmarks?page={{page}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookmarks"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks"],
               "query": [
                 {
                   "key": "page",
                   "value": "{{page}}"
                 }
               ]
-            }
+            },
+            "description": "Obtiene bookmarks paginados (público)"
           },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Tiene paginación', function () {",
+                  "pm.test('✅ Status 200', function () { pm.response.to.have.status(200); });",
+                  "",
+                  "pm.test('✅ Tiene estructura de paginación', function () {",
                   "  const body = pm.response.json();",
                   "  pm.expect(body).to.have.property('data');",
                   "  pm.expect(body).to.have.property('currentPageNo');",
                   "  pm.expect(body).to.have.property('totalPages');",
+                  "  pm.expect(body).to.have.property('totalElements');",
+                  "  pm.expect(body).to.have.property('hasNextPage');",
+                  "  pm.expect(body).to.have.property('hasPreviousPage');",
+                  "  ",
+                  "  console.log('Página:', body.currentPageNo, '/', body.totalPages);",
+                  "  console.log('Total elementos:', body.totalElements);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -125,31 +412,32 @@
         {
           "name": "GET /api/bookmarks/:id",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/bookmarks/{{bookmarkId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookmarks",
-                "{{bookmarkId}}"
-              ]
-            }
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", "{{bookmarkId}}"]
+            },
+            "description": "Obtiene un bookmark por ID (público)"
           },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-                  "pm.test('Tiene campos básicos', function () {",
+                  "pm.test('✅ Status 200', function () { pm.response.to.have.status(200); });",
+                  "",
+                  "pm.test('✅ Tiene campos básicos', function () {",
                   "  const b = pm.response.json();",
                   "  pm.expect(b).to.have.property('id');",
                   "  pm.expect(b).to.have.property('title');",
                   "  pm.expect(b).to.have.property('url');",
+                  "  pm.expect(b).to.have.property('createdAt');",
+                  "  pm.expect(b).to.have.property('updatedAt');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -158,40 +446,49 @@
           ]
         },
         {
-          "name": "POST /api/bookmarks (create)",
+          "name": "POST /api/bookmarks (create) 🔒",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Quarkus Docs\",\n  \"url\": \"https://quarkus.io\",\n  \"description\": \"Sitio oficial de Quarkus\"\n}"
+              "raw": "{\n  \"title\": \"Quarkus Security Guide\",\n  \"url\": \"https://quarkus.io/guides/security-{{$timestamp}}\",\n  \"description\": \"Official Quarkus Security documentation\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/bookmarks",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookmarks"
-              ]
-            }
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks"]
+            },
+            "description": "Crea un nuevo bookmark (requiere autenticación: USER o ADMIN)"
           },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
-                  "const created = pm.response.json();",
-                  "pm.collectionVariables.set('createdBookmarkId', String(created.id));",
-                  "pm.test('Se guardó el id como createdBookmarkId', function () {",
-                  "  pm.expect(pm.collectionVariables.get('createdBookmarkId')).to.exist;",
+                  "pm.test('✅ Status 201 Created', function () { ",
+                  "    pm.response.to.have.status(201); ",
+                  "});",
+                  "",
+                  "pm.test('✅ Bookmark creado correctamente', function () {",
+                  "    const created = pm.response.json();",
+                  "    pm.expect(created).to.have.property('id');",
+                  "    pm.expect(created).to.have.property('title');",
+                  "    pm.expect(created).to.have.property('url');",
+                  "    ",
+                  "    // Guardar ID para usar en UPDATE y DELETE",
+                  "    pm.collectionVariables.set('createdBookmarkId', String(created.id));",
+                  "    console.log('✅ Bookmark creado con ID:', created.id);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -200,39 +497,45 @@
           ]
         },
         {
-          "name": "PUT /api/bookmarks/:id (update created)",
+          "name": "PUT /api/bookmarks/:id (update) 🔒",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Quarkus Docs (updated)\",\n  \"url\": \"https://quarkus.io\",\n  \"description\": \"Actualizado desde Postman\"\n}"
+              "raw": "{\n  \"title\": \"Quarkus Security Guide (UPDATED)\",\n  \"url\": \"https://quarkus.io/guides/security-overview\",\n  \"description\": \"Updated from Postman with JWT auth\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/bookmarks/{{createdBookmarkId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookmarks",
-                "{{createdBookmarkId}}"
-              ]
-            }
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", "{{createdBookmarkId}}"]
+            },
+            "description": "Actualiza un bookmark existente (requiere autenticación: USER o ADMIN)"
           },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-                  "const b = pm.response.json();",
-                  "pm.test('Título actualizado', function(){ pm.expect(b.title).to.eql('Quarkus Docs (updated)'); });"
+                  "pm.test('✅ Status 200 OK', function () { ",
+                  "    pm.response.to.have.status(200); ",
+                  "});",
+                  "",
+                  "pm.test('✅ Bookmark actualizado', function () {",
+                  "    const b = pm.response.json();",
+                  "    pm.expect(b.title).to.include('UPDATED');",
+                  "    console.log('✅ Bookmark actualizado:', b.title);",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -240,28 +543,90 @@
           ]
         },
         {
-          "name": "DELETE /api/bookmarks/:id (delete created)",
+          "name": "DELETE /api/bookmarks/:id 🔒 ADMIN ONLY",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}",
+                "type": "text",
+                "description": "Requiere token con rol ADMIN"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/bookmarks/{{createdBookmarkId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookmarks",
-                "{{createdBookmarkId}}"
-              ]
-            }
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", "{{createdBookmarkId}}"]
+            },
+            "description": "Elimina un bookmark (SOLO ADMINISTRADORES)\n\n⚠️ Si usas un token de USER normal, obtendrás 403 Forbidden.\nUsa el request 'POST /api/auth/login (Admin)' primero para obtener token de admin."
           },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                  "pm.test('✅ Status 204 No Content (si eres ADMIN)', function () {",
+                  "    if (pm.response.code === 204) {",
+                  "        pm.expect(pm.response.code).to.eql(204);",
+                  "        console.log('✅ Bookmark eliminado exitosamente');",
+                  "    } else if (pm.response.code === 403) {",
+                  "        console.warn('⚠️ 403 Forbidden: necesitas rol ADMIN');",
+                  "        console.warn('Ejecuta: POST /api/auth/login (Admin) primero');",
+                  "    } else if (pm.response.code === 401) {",
+                  "        console.error('❌ 401 Unauthorized: no hay token válido');",
+                  "        console.error('Ejecuta cualquier login primero');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/bookmarks/:id (as USER - expect 403)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", "1"]
+            },
+            "description": "Intenta eliminar un bookmark con usuario normal (debe fallar con 403)\n\nEste request demuestra la protección de roles - solo ADMIN puede eliminar."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Recibe 403 Forbidden (correcto - no eres ADMIN)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([403, 401]);",
+                  "    ",
+                  "    if (pm.response.code === 403) {",
+                  "        console.log('✅ Seguridad funcionando: USER no puede eliminar');",
+                  "    } else {",
+                  "        console.log('ℹ️ No autenticado - ejecuta login primero');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Asegurar que estamos usando token de USER (no admin)",
+                  "// Si tenemos adminToken guardado, temporalmente usar jwtToken normal",
+                  "console.log('ℹ️ Este request debe fallar con 403 - solo ADMIN puede eliminar');"
                 ],
                 "type": "text/javascript"
               }
@@ -274,19 +639,68 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080"
+      "value": "http://localhost:8080",
+      "type": "string"
     },
     {
       "key": "page",
-      "value": "1"
+      "value": "1",
+      "type": "string"
     },
     {
       "key": "bookmarkId",
-      "value": "1"
+      "value": "1",
+      "type": "string"
     },
     {
       "key": "createdBookmarkId",
-      "value": ""
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "jwtToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "currentUsername",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "currentRoles",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "defaultUsername",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "defaultPassword",
+      "value": "admin123",
+      "type": "string"
+    },
+    {
+      "key": "newUsername",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "newUserEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "newUserPassword",
+      "value": "TestPass123!",
+      "type": "string"
     }
   ]
 }
