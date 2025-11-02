@@ -1,5 +1,5 @@
 -- Tabla de usuarios
-CREATE SEQUENCE IF NOT EXISTS user_id_seq START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE IF NOT EXISTS user_id_seq START WITH 101 INCREMENT BY 50;
 
 CREATE TABLE IF NOT EXISTS users (
                                      id BIGINT NOT NULL DEFAULT nextval('user_id_seq'),
