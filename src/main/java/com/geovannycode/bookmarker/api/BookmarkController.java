@@ -5,6 +5,8 @@ import com.geovannycode.bookmarker.models.BookmarkRequest;
 import com.geovannycode.bookmarker.models.BookmarkResponse;
 import com.geovannycode.bookmarker.models.PagedResult;
 import com.geovannycode.bookmarker.services.BookmarkService;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.Consumes;
@@ -25,6 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
@@ -45,6 +48,7 @@ public class BookmarkController {
 
     @GET
     @Path("/all")
+    @PermitAll
     @Operation(
             summary = "Obtener todos los bookmarks",
             description = "Retorna todos los bookmarks sin paginación"
@@ -66,6 +70,7 @@ public class BookmarkController {
     }
 
     @GET
+    @PermitAll
     @Operation(
             summary = "Obtener bookmarks paginados",
             description = "Retorna bookmarks con paginación"
@@ -99,6 +104,7 @@ public class BookmarkController {
 
     @GET
     @Path("/{id}")
+    @PermitAll
     @Operation(
             summary = "Obtener bookmark por ID",
             description = "Retorna un bookmark específico por su identificador"
@@ -124,9 +130,11 @@ public class BookmarkController {
 
 
     @POST
+    @RolesAllowed({"USER", "ADMIN"})
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(
             summary = "Crear nuevo bookmark",
-            description = "Crea un nuevo bookmark con los datos proporcionados"
+            description = "Crea un nuevo bookmark con los datos proporcionados (requiere autenticación"
     )
     @APIResponses({
             @APIResponse(
@@ -147,10 +155,12 @@ public class BookmarkController {
 
 
     @PUT
+    @RolesAllowed({"USER", "ADMIN"})
+    @SecurityRequirement(name = "bearerAuth")
     @Path("/{id}")
     @Operation(
             summary = "Actualizar bookmark",
-            description = "Actualiza un bookmark existente"
+            description = "Actualiza un bookmark existente (requiere autenticación"
     )
     @APIResponses({
             @APIResponse(
@@ -178,9 +188,11 @@ public class BookmarkController {
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed({"ADMIN"})
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(
             summary = "Eliminar bookmark",
-            description = "Elimina un bookmark por su ID"
+            description = "Elimina un bookmark por su ID (solo administradores)"
     )
     @APIResponses({
             @APIResponse(
